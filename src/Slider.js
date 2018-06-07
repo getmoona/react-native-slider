@@ -308,7 +308,7 @@ export default class Slider extends PureComponent {
 
   _handleStartShouldSetPanResponder = (e: Object, /*gestureState: Object*/): boolean => {
     // Should we become active when the user presses down on the thumb?
-    return this._thumbHitTest(e);
+    return true;
   };
 
   _handleMoveShouldSetPanResponder(/*e: Object, gestureState: Object*/): boolean {
@@ -316,9 +316,10 @@ export default class Slider extends PureComponent {
     return false;
   };
 
-  _handlePanResponderGrant = (/*e: Object, gestureState: Object*/) => {
-    this._previousLeft = this._getThumbLeft(this._getCurrentValue());
-    this._fireChangeEvent('onSlidingStart');
+  _handlePanResponderGrant = (e: Object, gestureState: Object) => {
+    this._previousLeft = e.nativeEvent.locationX - (this.props.thumbTouchSize.width/2);
+    if (this._setCurrentValue(this._getValue(gestureState)))
+      this._fireChangeEvent('onValueChange');
   };
 
   _handlePanResponderMove = (e: Object, gestureState: Object) => {
@@ -326,8 +327,8 @@ export default class Slider extends PureComponent {
       return;
     }
 
-    this._setCurrentValue(this._getValue(gestureState));
-    this._fireChangeEvent('onValueChange');
+    if (this._setCurrentValue(this._getValue(gestureState)))
+      this._fireChangeEvent('onValueChange');
   };
 
   _handlePanResponderRequestEnd(e: Object, gestureState: Object) {
@@ -412,7 +413,10 @@ export default class Slider extends PureComponent {
   };
 
   _setCurrentValue = (value: number) => {
-    this.state.value.setValue(value);
+    if (this.state.value.__getValue() !== value) {
+      this.state.value.setValue(value);
+      return true
+    } else return false
   };
 
   _setCurrentValueAnimated = (value: number) => {
