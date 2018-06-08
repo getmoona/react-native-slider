@@ -306,9 +306,9 @@ export default class Slider extends PureComponent {
     return otherProps;
   };
 
-  _handleStartShouldSetPanResponder = (e: Object, /*gestureState: Object*/): boolean => {
+  _handleStartShouldSetPanResponder = (e: Object, gestureState: Object): boolean => {
     // Should we become active when the user presses down on the thumb?
-    return true;
+    return this._thumbHitTest(e);
   };
 
   _handleMoveShouldSetPanResponder(/*e: Object, gestureState: Object*/): boolean {
@@ -317,16 +317,14 @@ export default class Slider extends PureComponent {
   };
 
   _handlePanResponderGrant = (e: Object, gestureState: Object) => {
-    this._previousLeft = e.nativeEvent.locationX - (this.props.thumbTouchSize.width/2);
-    if (this._setCurrentValue(this._getValue(gestureState)))
-      this._fireChangeEvent('onValueChange');
+    this._previousLeft = this._getThumbLeft(this._getCurrentValue());
+    this._fireChangeEvent('onSlidingStart');
   };
 
   _handlePanResponderMove = (e: Object, gestureState: Object) => {
     if (this.props.disabled) {
       return;
     }
-
     if (this._setCurrentValue(this._getValue(gestureState)))
       this._fireChangeEvent('onValueChange');
   };
