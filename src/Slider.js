@@ -191,6 +191,9 @@ export default class Slider extends PureComponent {
      * Set this to true to invert the swipe direction of the slider. Inversion is linked to the slider's orientation.
      */
     inverted: PropTypes.bool,
+
+    horizontalPadding: PropTypes.number,
+    verticalPadding: PropTypes.number
   };
 
   static defaultProps = {
@@ -211,6 +214,8 @@ export default class Slider extends PureComponent {
     animationType: 'timing',
     orientation: 'horizontal',
     inverted: false,
+    horizontalPadding: 0,
+    verticalPadding: 0
   };
 
   state = {
@@ -259,26 +264,27 @@ export default class Slider extends PureComponent {
       trackStyle,
       thumbStyle,
       debugTouchArea,
+      onValueChange,
+      thumbTouchSize,
+      animationType,
+      animateTransitions,
+      horizontalPadding,
+      verticalPadding,
       ...other
     } = this.props;
     var {value, containerSize, trackSize, thumbSize, allMeasured} = this.state;
     var mainStyles = styles || defaultStyles;
     var thumbLeft = value.interpolate({
       inputRange: [minimumValue, maximumValue],
-      outputRange: [0, containerSize.width - thumbSize.width],
+      outputRange: [horizontalPadding, containerSize.width - thumbSize.width - horizontalPadding],
       //extrapolate: 'clamp',
     });
     var thumbTop = value.interpolate({
       inputRange: [minimumValue, maximumValue],
-      outputRange: [0, containerSize.height - thumbSize.height / 2],
+      outputRange: [-verticalPadding, -containerSize.height + verticalPadding + thumbSize.height],
       //extrapolate: 'clamp',
     });
 
-    var thumbTop2 = value.interpolate({
-      inputRange: [minimumValue, maximumValue],
-      outputRange: [0, -containerSize.height + thumbSize.height],
-      //extrapolate: 'clamp',
-    });
     var valueVisibleStyle = {};
     if (!allMeasured) {
       valueVisibleStyle.opacity = 0;
@@ -321,7 +327,7 @@ export default class Slider extends PureComponent {
               position: 'absolute',
               transform: [
                 { translateX: this._isHorizontal() ? thumbLeft : 0 },
-                { translateY: this._isHorizontal() ? 0 : thumbTop2 }
+                { translateY: this._isHorizontal() ? 0 : thumbTop }
               ],
               ...valueVisibleStyle
             }
@@ -592,13 +598,11 @@ export default class Slider extends PureComponent {
     var thumbTouchRect = this._getThumbTouchRect();
     var isHorizontal = this._isHorizontal();
     var positionStyle = {
-      left: isHorizontal ? thumb : thumbTouchRect.x,
-      top: thumbTouchRect.y,
+      left: isHorizontal ? thumb + this.props.horizontalPadding : thumbTouchRect.x,
+      top: thumbTouchRect.y + this.props.verticalPadding,
       width: thumbTouchRect.width,
       height: thumbTouchRect.height,
     };
-
-
 
     return (
       <Animated.View
